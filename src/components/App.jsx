@@ -15,7 +15,7 @@ export function App() {
 
   useEffect(() => {
     saveContactsToLocalStorage();
-  }, [contacts]);
+  }, [contacts, saveContactsToLocalStorage]);
 
   const loadContactsFromLocalStorage = () => {
     const storedContacts = localStorage.getItem('contacts');
