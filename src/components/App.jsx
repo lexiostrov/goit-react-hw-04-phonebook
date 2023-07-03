@@ -6,27 +6,14 @@ import { Filter } from './Filter/Filter';
 import { Container } from './App.styled';
 
 export function App() {
-  const [contacts, setContacts] = useState([]);
+  const [contacts, setContacts] = useState(() => {
+    return JSON.parse(localStorage.getItem('contacts')) ?? [];
+  });
   const [filter, setFilter] = useState('');
 
   useEffect(() => {
-    loadContactsFromLocalStorage();
-  }, []);
-
-  useEffect(() => {
-    saveContactsToLocalStorage();
-  }, [contacts, saveContactsToLocalStorage]);
-
-  const loadContactsFromLocalStorage = () => {
-    const storedContacts = localStorage.getItem('contacts');
-    if (storedContacts) {
-      setContacts(JSON.parse(storedContacts));
-    }
-  };
-
-  const saveContactsToLocalStorage = () => {
     localStorage.setItem('contacts', JSON.stringify(contacts));
-  };
+  }, [contacts]);
 
   const addContactMarkup = ({ name, number }) => {
     const newContact = {
@@ -35,19 +22,11 @@ export function App() {
       number,
     };
 
-    const contactExists = contacts.some(
-      contact => contact.name.toLowerCase() === newContact.name.toLowerCase()
-    );
-
-    if (contactExists) {
-      alert('This contact already exists');
-    } else {
-      setContacts(prevContacts => [newContact, ...prevContacts]);
-    }
-  };
-
-  const onFilterChange = e => {
-    setFilter(e.currentTarget.value);
+    contacts.find(
+      ({ name }) => name.toLowerCase() === newContact.name.toLowerCase()
+    )
+      ? alert('This contact already exists')
+      : setContacts([newContact, ...contacts]);
   };
 
   const visibleContacts = () => {
@@ -58,17 +37,15 @@ export function App() {
   };
 
   const onClickDelBtn = currentID => {
-    setContacts(prevContacts =>
-      prevContacts.filter(contact => contact.id !== currentID)
-    );
+    setContacts(contacts.filter(contact => contact.id !== currentID));
   };
 
   return (
     <Container>
       <h1>Phonebook</h1>
-      <AddContact onSubmit={addContactMarkup} />
+      <AddContact onSubmit={data => addContactMarkup(data)} />
       <h2>Contacts</h2>
-      <Filter value={filter} onFilter={onFilterChange} />
+      <Filter value={filter} onFilter={e => setFilter(e.currentTarget.value)} />
       <ContactsList
         onClickDelBtn={onClickDelBtn}
         contacts={visibleContacts()}
